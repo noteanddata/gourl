@@ -47,31 +47,37 @@ func doget(url string, opt Options) error {
         
       successCount := make(chan int)
       failureCount := make(chan int)
+      timeMilliSeconds := make(chan int64)
       for i := 0; i < opt.concurrent; i++ {
         count := opt.number / opt.concurrent
         if i < remain {
           count++
         }
-        go getn(url, count, successCount, failureCount)
+        go getn(url, count, successCount, failureCount, timeMilliSeconds)
       }
   
-      totalSuccess, totalFailure := 0, 0
+      totalSuccess, totalFailure, sumTimeMilliSeconds := 0, 0, int64(0)
       for i := 0; i < opt.concurrent; i++ {
         totalSuccess += <- successCount
         totalFailure += <- failureCount
+        sumTimeMilliSeconds += <- timeMilliSeconds
       }
       
-      timeMilliSeconds := time.Now().Sub(t1).Nanoseconds() / 1000.0 / 1000.0
+      totalTimeMilliSeconds := time.Now().Sub(t1).Nanoseconds() / 1000.0 / 1000.0
+      avgTimeMilliSeconds := sumTimeMilliSeconds / int64(opt.number)
       
-      fmt.Println("totalSuccess=", totalSuccess, ", totalFailure=", totalFailure, ", time(ms)=", timeMilliSeconds)
+      qps := int64(opt.number) * 1000.0 / totalTimeMilliSeconds 
+      successRatio := totalSuccess * 100.0 / opt.number
+      fmt.Println("concurrent=", opt.concurrent, ",totalSuccess=", totalSuccess, ", totalFailure=", totalFailure, ", success ratio=", successRatio, "%")
+      fmt.Println("total time(ms)=", totalTimeMilliSeconds, ", qps=", qps, ", avgTime(ms)=", avgTimeMilliSeconds)
       
       return nil
   }   
 } 
  
-func getn(url string, count int, successCount chan int, failureCount chan int)  {  
+func getn(url string, count int, successCount chan int, failureCount chan int, timeMilliSeconds chan int64)  {  
   success, failure := 0,0
-  
+  start := time.Now()
   for i := 0; i < count; i++ {
     resp, err := http.Get(url)
     if err != nil {
@@ -94,6 +100,7 @@ func getn(url string, count int, successCount chan int, failureCount chan int)  
   
   successCount <- success
   failureCount <- failure
+  timeMilliSeconds <- time.Now().Sub(start).Nanoseconds() / 1000.0 / 1000.0
 }
 
 // get one url and print result 
