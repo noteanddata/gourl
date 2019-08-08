@@ -27,3 +27,9 @@ gourl -n 1000 -c 100 http://www.example.com
 totalSuccess= 987 , totalFailure= 13 , time(ms)= 2398
 
 ```
+
+## support http post 
+```
+gourl -p -f ./resources/post_form_sample1.txt -h http://localhost:8080/generate_short_url
+
+```

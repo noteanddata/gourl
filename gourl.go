@@ -15,6 +15,8 @@ type Options struct {
   printHeader bool
   number int
   concurrent int
+  post bool
+  filePath string
 }
 
 type BatchCallResult struct {
@@ -26,14 +28,27 @@ func run() {
   url := os.Args[len(os.Args)-1]
   var opt Options
   flag.BoolVar(&opt.printHeader, "h", false, "print header")
+  flag.BoolVar(&opt.post, "p", false, "http post")
   flag.IntVar(&opt.number, "n", 1, "number of request")
   flag.IntVar(&opt.concurrent, "c", 1, "concurrent request")
+  flag.StringVar(&opt.filePath, "f", "", "post file path")
   flag.Parse()
 
   //fmt.Printf("%+v \n", opt)
-
-  doget(url, opt)
+  if opt.post {
+    dopost(url, opt)
+  } else {
+    doget(url, opt)  
+  }
+  
 }
+
+func dopost(url string, opt Options) {
+  content_type := "application/x-www-form-urlencoded"
+  postSingle(url, content_type, opt.filePath, opt.printHeader)
+}
+
+
 
 func doget(url string, opt Options) error {
   if opt.number == 1 {
