@@ -5,8 +5,8 @@ import "os"
 import "fmt"
 import "io/ioutil"
 
-func postSingle(url string, content_type string, filePath string, printHeader bool) error {
-    file, err := os.Open(filePath)
+func postSingle(url string, content_type string, postFilePath string, printHeader bool) error {
+    file, err := os.Open(postFilePath)
     if err != nil {
       fmt.Println(err)
       return err

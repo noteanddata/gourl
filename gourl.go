@@ -6,6 +6,9 @@ import "net/http"
 import "flag"
 import "time"
 
+const (
+  content_type_form_urlencoded = "application/x-www-form-urlencoded"
+)
 
 func main() {
   run()
@@ -16,7 +19,8 @@ type Options struct {
   number int
   concurrent int
   post bool
-  filePath string
+  contentType string
+  postFilePath string
 }
 
 type BatchCallResult struct {
@@ -31,7 +35,8 @@ func run() {
   flag.BoolVar(&opt.post, "p", false, "http post")
   flag.IntVar(&opt.number, "n", 1, "number of request")
   flag.IntVar(&opt.concurrent, "c", 1, "concurrent request")
-  flag.StringVar(&opt.filePath, "f", "", "post file path")
+  flag.StringVar(&opt.postFilePath, "pf", "", "post file path")
+  flag.StringVar(&opt.contentType, "ct", "", "Content-Type header ")
   flag.Parse()
 
   //fmt.Printf("%+v \n", opt)
@@ -44,8 +49,11 @@ func run() {
 }
 
 func dopost(url string, opt Options) {
-  content_type := "application/x-www-form-urlencoded"
-  postSingle(url, content_type, opt.filePath, opt.printHeader)
+  content_type := content_type_form_urlencoded // default value
+  if opt.contentType != "" {
+    content_type = opt.contentType
+  }
+  postSingle(url, content_type, opt.postFilePath, opt.printHeader)
 }
 
 

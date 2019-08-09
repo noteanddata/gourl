@@ -30,6 +30,12 @@ totalSuccess= 987 , totalFailure= 13 , time(ms)= 2398
 
 ## support http post 
 ```
-gourl -p -f ./resources/post_form_sample1.txt -h http://localhost:8080/generate_short_url
+gourl -p -pf ./resources/post_form_sample1.txt -h http://localhost:8080/generate_short_url
+
+```
+
+## support http post with content type header 
+```
+gourl -p -pf ./resources/post_sample.json -ct application/json -h http://localhost:8080/
 
 ```
