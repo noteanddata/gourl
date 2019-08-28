@@ -39,3 +39,9 @@ gourl -p -pf ./resources/post_form_sample1.txt -h http://localhost:8080/generate
 gourl -p -pf ./resources/post_sample.json -ct application/json -h http://localhost:8080/
 
 ```
+
+## support http post with header from file 
+```
+gourl -p -pf ./resources/post_form_sample1.txt -hf ./resources/header_sample.properties -h http://localhost:8080/generate_short_url
+
+```

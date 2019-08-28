@@ -39,7 +39,7 @@ func run() {
 	flag.IntVar(&opt.concurrent, "c", 1, "concurrent request")
 	flag.StringVar(&opt.postFilePath, "pf", "", "post file path")
 	flag.StringVar(&opt.contentType, "ct", "", "Content-Type header")
-	flag.StringVar(&opt.headerFilePath, "ht", "", "Content-Type header")
+	flag.StringVar(&opt.headerFilePath, "hf", "", "header file path")
 	flag.Parse()
 
 	//fmt.Printf("%+v \n", opt)
@@ -56,7 +56,7 @@ func dopost(url string, opt Options) {
 	if opt.contentType != "" {
 		contentType = opt.contentType
 	}
-	postSingle(url, contentType, opt.postFilePath, opt.printHeader)
+	postSingle(url, contentType, opt.postFilePath, opt.printHeader, opt.headerFilePath)
 }
 
 func doget(url string, opt Options) error {
