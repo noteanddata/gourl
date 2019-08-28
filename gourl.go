@@ -15,6 +15,7 @@ func main() {
 	run()
 }
 
+// Options contains gourl options
 type Options struct {
 	printHeader    bool
 	number         int
@@ -25,6 +26,7 @@ type Options struct {
 	headerFilePath string
 }
 
+// BatchCallResult contains batch call result
 type BatchCallResult struct {
 	success int
 	failure int
@@ -62,40 +64,39 @@ func dopost(url string, opt Options) {
 func doget(url string, opt Options) error {
 	if opt.number == 1 {
 		return getonePrint(url, opt.printHeader)
-	} else {
-
-		remain := opt.number % opt.concurrent
-
-		t1 := time.Now()
-
-		successCount := make(chan int)
-		failureCount := make(chan int)
-		timeMilliSeconds := make(chan int64)
-		for i := 0; i < opt.concurrent; i++ {
-			count := opt.number / opt.concurrent
-			if i < remain {
-				count++
-			}
-			go getn(url, count, successCount, failureCount, timeMilliSeconds)
-		}
-
-		totalSuccess, totalFailure, sumTimeMilliSeconds := 0, 0, int64(0)
-		for i := 0; i < opt.concurrent; i++ {
-			totalSuccess += <-successCount
-			totalFailure += <-failureCount
-			sumTimeMilliSeconds += <-timeMilliSeconds
-		}
-
-		totalTimeMilliSeconds := time.Now().Sub(t1).Nanoseconds() / 1000.0 / 1000.0
-		avgTimeMilliSeconds := sumTimeMilliSeconds / int64(opt.number)
-
-		qps := int64(opt.number) * 1000.0 / totalTimeMilliSeconds
-		successRatio := totalSuccess * 100.0 / opt.number
-		fmt.Println("concurrent=", opt.concurrent, ",totalSuccess=", totalSuccess, ", totalFailure=", totalFailure, ", success ratio=", successRatio, "%")
-		fmt.Println("total time(ms)=", totalTimeMilliSeconds, ", qps=", qps, ", avgTime(ms)=", avgTimeMilliSeconds)
-
-		return nil
 	}
+
+	remain := opt.number % opt.concurrent
+
+	t1 := time.Now()
+
+	successCount := make(chan int)
+	failureCount := make(chan int)
+	timeMilliSeconds := make(chan int64)
+	for i := 0; i < opt.concurrent; i++ {
+		count := opt.number / opt.concurrent
+		if i < remain {
+			count++
+		}
+		go getn(url, count, successCount, failureCount, timeMilliSeconds)
+	}
+
+	totalSuccess, totalFailure, sumTimeMilliSeconds := 0, 0, int64(0)
+	for i := 0; i < opt.concurrent; i++ {
+		totalSuccess += <-successCount
+		totalFailure += <-failureCount
+		sumTimeMilliSeconds += <-timeMilliSeconds
+	}
+
+	totalTimeMilliSeconds := time.Now().Sub(t1).Nanoseconds() / 1000.0 / 1000.0
+	avgTimeMilliSeconds := sumTimeMilliSeconds / int64(opt.number)
+
+	qps := int64(opt.number) * 1000.0 / totalTimeMilliSeconds
+	successRatio := totalSuccess * 100.0 / opt.number
+	fmt.Println("concurrent=", opt.concurrent, ",totalSuccess=", totalSuccess, ", totalFailure=", totalFailure, ", success ratio=", successRatio, "%")
+	fmt.Println("total time(ms)=", totalTimeMilliSeconds, ", qps=", qps, ", avgTime(ms)=", avgTimeMilliSeconds)
+
+	return nil
 }
 
 func getn(url string, count int, successCount chan int, failureCount chan int, timeMilliSeconds chan int64) {
