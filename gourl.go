@@ -63,7 +63,7 @@ func dopost(url string, opt Options) {
 
 func doget(url string, opt Options) error {
 	if opt.number == 1 {
-		return getonePrint(url, opt.printHeader)
+		return getonePrint(url, opt.headerFilePath, opt.printHeader)
 	}
 
 	remain := opt.number % opt.concurrent
@@ -78,7 +78,7 @@ func doget(url string, opt Options) error {
 		if i < remain {
 			count++
 		}
-		go getn(url, count, successCount, failureCount, timeMilliSeconds)
+		go getn(url, opt.headerFilePath, count, successCount, failureCount, timeMilliSeconds)
 	}
 
 	totalSuccess, totalFailure, sumTimeMilliSeconds := 0, 0, int64(0)
@@ -99,11 +99,12 @@ func doget(url string, opt Options) error {
 	return nil
 }
 
-func getn(url string, count int, successCount chan int, failureCount chan int, timeMilliSeconds chan int64) {
+func getn(url string, headerFilePath string,
+	count int, successCount chan int, failureCount chan int, timeMilliSeconds chan int64) {
 	success, failure := 0, 0
 	start := time.Now()
 	for i := 0; i < count; i++ {
-		resp, err := http.Get(url)
+		resp, err := getSingle(url, headerFilePath)
 		if err != nil {
 			failure++
 			continue
@@ -128,8 +129,9 @@ func getn(url string, count int, successCount chan int, failureCount chan int, t
 }
 
 // get one url and print result
-func getonePrint(url string, printHeader bool) error {
-	resp, err := http.Get(url)
+func getonePrint(url string, headerFilePath string, printHeader bool) error {
+	resp, err := getSingle(url, headerFilePath)
+
 	if err != nil {
 		fmt.Println(err)
 		return err
