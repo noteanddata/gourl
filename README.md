@@ -54,11 +54,16 @@ gourl -hf ./resources/header_sample.properties -h http://localhost:8080/generate
 
 ## support http GET with header from file and also with -n and -c 
 ```
-
 gourl -n 6 -c 2 -hf ./resources/header_sample.properties -h http://localhost:8080/generate_short_url
+
+```
+
+## support http POST with -n and -c 
+```
+gourl -n 6 -c 2 -p -pf ./resources/post_form_sample1.txt -h http://localhost:8080/generate_short_url
+
 ```
 
 # todo
-1. support get with http header file
-2. supoprt post with -n and -c 
+2. supprt post with -n and -c 
 3. have other tools related to http protocol
