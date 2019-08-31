@@ -1,13 +1,11 @@
 package main
 
 import "os"
-import "fmt"
-import "io/ioutil"
-import "net/http"
+
 import "flag"
-import "time"
 
 const (
+	headerContentType         = "Content-Type"
 	contentTypeFormUrlencoded = "application/x-www-form-urlencoded"
 )
 
@@ -26,10 +24,11 @@ type Options struct {
 	headerFilePath string
 }
 
-// BatchCallResult contains batch call result
-type BatchCallResult struct {
-	success int
-	failure int
+// CallStatistic contains information about statistics
+type CallStatistic struct {
+	successCount     int
+	failureCount     int
+	timeMilliSeconds int64
 }
 
 func run() {
@@ -46,97 +45,28 @@ func run() {
 
 	//fmt.Printf("%+v \n", opt)
 	if opt.post {
-		dopost(url, opt)
+		doPost(url, opt)
 	} else {
-		doget(url, opt)
+		doGet(url, opt)
 	}
-
 }
 
-func dopost(url string, opt Options) {
-	contentType := contentTypeFormUrlencoded // default value
-	if opt.contentType != "" {
-		contentType = opt.contentType
-	}
-	postSingle(url, contentType, opt.postFilePath, opt.printHeader, opt.headerFilePath)
-}
-
-func doget(url string, opt Options) error {
+func doPost(url string, opt Options) {
 	if opt.number == 1 {
-		return getonePrint(url, opt.headerFilePath, opt.printHeader)
-	}
-
-	remain := opt.number % opt.concurrent
-
-	t1 := time.Now()
-
-	successCount := make(chan int)
-	failureCount := make(chan int)
-	timeMilliSeconds := make(chan int64)
-	for i := 0; i < opt.concurrent; i++ {
-		count := opt.number / opt.concurrent
-		if i < remain {
-			count++
+		contentType := contentTypeFormUrlencoded // default value
+		if opt.contentType != "" {
+			contentType = opt.contentType
 		}
-		go getn(url, opt.headerFilePath, count, successCount, failureCount, timeMilliSeconds)
+		postSingle(url, contentType, opt.postFilePath, opt.printHeader, opt.headerFilePath)
+	} else {
+		concurrentExecute(url, opt)
 	}
+}
 
-	totalSuccess, totalFailure, sumTimeMilliSeconds := 0, 0, int64(0)
-	for i := 0; i < opt.concurrent; i++ {
-		totalSuccess += <-successCount
-		totalFailure += <-failureCount
-		sumTimeMilliSeconds += <-timeMilliSeconds
+func doGet(url string, opt Options) error {
+	if opt.number == 1 {
+		return getOnePrint(url, opt.headerFilePath, opt.printHeader)
 	}
-
-	totalTimeMilliSeconds := time.Now().Sub(t1).Nanoseconds() / 1000.0 / 1000.0
-	avgTimeMilliSeconds := sumTimeMilliSeconds / int64(opt.number)
-
-	qps := int64(opt.number) * 1000.0 / totalTimeMilliSeconds
-	successRatio := totalSuccess * 100.0 / opt.number
-	fmt.Println("concurrent=", opt.concurrent, ",totalSuccess=", totalSuccess, ", totalFailure=", totalFailure, ", success ratio=", successRatio, "%")
-	fmt.Println("total time(ms)=", totalTimeMilliSeconds, ", qps=", qps, ", avgTime(ms)=", avgTimeMilliSeconds)
-
+	concurrentExecute(url, opt)
 	return nil
-}
-
-func getn(url string, headerFilePath string,
-	count int, successCount chan int, failureCount chan int, timeMilliSeconds chan int64) {
-	success, failure := 0, 0
-	start := time.Now()
-	for i := 0; i < count; i++ {
-		resp, err := getSingle(url, headerFilePath)
-		if err != nil {
-			failure++
-			continue
-		}
-
-		if resp.StatusCode == http.StatusOK {
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				failure++
-				continue
-			}
-
-			if len(bodyBytes) >= 0 {
-				success++
-			}
-		}
-	}
-
-	successCount <- success
-	failureCount <- failure
-	timeMilliSeconds <- time.Now().Sub(start).Nanoseconds() / 1000.0 / 1000.0
-}
-
-// get one url and print result
-func getonePrint(url string, headerFilePath string, printHeader bool) error {
-	resp, err := getSingle(url, headerFilePath)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	err = printResponse(printHeader, resp)
-	return err
 }
