@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func printResponse(printHeader bool, resp *http.Response) error {
+func printResponseDetail(printHeader bool, resp *http.Response) error {
 	fmt.Println(resp.Status)
 
 	if printHeader {

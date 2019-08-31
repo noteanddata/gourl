@@ -57,7 +57,7 @@ func doPost(url string, opt Options) {
 		if opt.contentType != "" {
 			contentType = opt.contentType
 		}
-		postSingle(url, contentType, opt.postFilePath, opt.printHeader, opt.headerFilePath)
+		postSingle(url, contentType, opt.postFilePath, opt.printHeader, true, opt.headerFilePath)
 	} else {
 		concurrentExecute(url, opt)
 	}

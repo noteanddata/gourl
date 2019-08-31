@@ -31,7 +31,7 @@ func (getRequestExecutor GetRequestExecutor) execute(requestInfo RequestInfo) (*
 }
 
 func (postRequestExecutor PostRequestExecutor) execute(requestInfo RequestInfo) (*http.Response, error) {
-	return postSingle(requestInfo.url, requestInfo.contentType, requestInfo.postFilePath, false, requestInfo.headerFilePath)
+	return postSingle(requestInfo.url, requestInfo.contentType, requestInfo.postFilePath, false, false, requestInfo.headerFilePath)
 }
 
 func executeN(count int, requestInfo RequestInfo, requestExecutor RequestExecutor, callStatistic chan<- CallStatistic) {
