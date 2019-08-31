@@ -24,6 +24,6 @@ func getOnePrint(url string, headerFilePath string, printHeader bool) error {
 		return err
 	}
 
-	err = printResponse(printHeader, resp)
+	err = printResponseDetail(printHeader, resp)
 	return err
 }

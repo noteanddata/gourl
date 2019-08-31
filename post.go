@@ -6,7 +6,7 @@ import (
 )
 
 func postSingle(url string, contentType string,
-	postFilePath string, printHeader bool,
+	postFilePath string, printHeader bool, printResponse bool,
 	headerFilePath string) (*http.Response, error) {
 	request, file, err := createPostRequest(url, postFilePath)
 	if err != nil {
@@ -30,6 +30,9 @@ func postSingle(url string, contentType string,
 		return nil, err
 	}
 
-	err = printResponse(printHeader, resp)
+	if printResponse {
+		err = printResponseDetail(printHeader, resp)
+	}
+
 	return resp, err
 }
