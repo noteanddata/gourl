@@ -65,5 +65,4 @@ gourl -n 6 -c 2 -p -pf ./resources/post_form_sample1.txt -h http://localhost:808
 ```
 
 # todo
-2. supprt post with -n and -c 
-3. have other tools related to http protocol
+* have other tools related to http protocol
